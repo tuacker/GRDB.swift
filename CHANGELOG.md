@@ -100,6 +100,7 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 - **Breaking Change**: `DatabaseWriter.barrierWriteWithoutTransaction` is now a throwing method.
 - **Breaking Change**: `DatabaseQueue()` initializer for in-memory databases is now throwing.
 - **Breaking Change**: [#1172](https://github.com/groue/GRDB.swift/pull/1172) by [@groue](https://github.com/groue): Optional is a database value like others
+- **Breaking Change**: [#1117](https://github.com/groue/GRDB.swift/pull/1117) by [@groue](https://github.com/groue): DatabaseDecodingError
 
 ## 5.21.0
 
