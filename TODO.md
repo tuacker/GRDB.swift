@@ -23,7 +23,7 @@
 - [ ] Property wrapper that decodes dictionaries (but how to tell the key column?)
 - [X] See if SQLITE_FCNTL_DATA_VERSION could help working around the lack of snapshots in order to avoid double initial fetch of ValueObservation. Result: no, it does not look it returns values that are comparable between two distinct SQLite connections (from the initial reader, and from the writer thhat starts the observation)
 - [ ] Grab all FTS tokens in a string
-- [ ] GRDB 6: decoding errors
+- [X] GRDB 6: decoding errors
 - [ ] GRDB 6: encoding errors for record (`EncodableRecord.encode(to:)`)
 - [?] GRDB 6: protocol-based record container? This could avoid computing & encoding values we do not need. 
 - [ ] GRDB 6: encoding & statement binding errors for database values (conversion to DatabaseValue, statement binding, etc)
