@@ -20,32 +20,36 @@ class SharedValueObservationTests: GRDBTestCase {
                 extent: .observationLifetime)
         XCTAssertEqual(log.flush(), [])
         
-        do {
-            var value: Int?
-            let cancellable = sharedObservation!.start(
-                onError: { XCTFail("Unexpected error \($0)") },
-                onChange: { value = $0 })
+        // We want to control when the shared observation is deallocated
+        withExtendedLifetime(sharedObservation) { sharedObservation in
+            do {
+                var value: Int?
+                let cancellable = sharedObservation!.start(
+                    onError: { XCTFail("Unexpected error \($0)") },
+                    onChange: { value = $0 })
+                
+                XCTAssertEqual(value, 0)
+                XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 0"])
+                
+                cancellable.cancel()
+                XCTAssertEqual(log.flush(), [])
+            }
             
-            XCTAssertEqual(value, 0)
-            XCTAssertEqual(log.flush(), ["start", "fetch", "value: 0", "tracked region: player(*)"])
-            
-            cancellable.cancel()
-            XCTAssertEqual(log.flush(), [])
+            do {
+                var value: Int?
+                let cancellable = sharedObservation!.start(
+                    onError: { XCTFail("Unexpected error \($0)") },
+                    onChange: { value = $0 })
+                
+                XCTAssertEqual(value, 0)
+                XCTAssertEqual(log.flush(), [])
+                
+                cancellable.cancel()
+                XCTAssertEqual(log.flush(), [])
+            }
         }
         
-        do {
-            var value: Int?
-            let cancellable = sharedObservation!.start(
-                onError: { XCTFail("Unexpected error \($0)") },
-                onChange: { value = $0 })
-            
-            XCTAssertEqual(value, 0)
-            XCTAssertEqual(log.flush(), [])
-            
-            cancellable.cancel()
-            XCTAssertEqual(log.flush(), [])
-        }
-
+        // Deallocate the shared observation
         sharedObservation = nil
         XCTAssertEqual(log.flush(), ["cancel"])
     }
@@ -68,28 +72,32 @@ class SharedValueObservationTests: GRDBTestCase {
                 extent: .observationLifetime)
         XCTAssertEqual(log.flush(), [])
         
-        do {
-            var value1: Int?
-            var value2: Int?
-            let cancellable1 = sharedObservation!.start(
-                onError: { XCTFail("Unexpected error \($0)") },
-                onChange: { value in
-                    value1 = value
-                    _ = sharedObservation!.start(
-                        onError: { XCTFail("Unexpected error \($0)") },
-                        onChange: { value in
-                            value2 = value
-                        })
-                })
-            
-            XCTAssertEqual(value1, 0)
-            XCTAssertEqual(value2, 0)
-            XCTAssertEqual(log.flush(), ["start", "fetch", "value: 0", "tracked region: player(*)"])
-            
-            cancellable1.cancel()
-            XCTAssertEqual(log.flush(), [])
+        // We want to control when the shared observation is deallocated
+        withExtendedLifetime(sharedObservation) { sharedObservation in
+            do {
+                var value1: Int?
+                var value2: Int?
+                let cancellable1 = sharedObservation!.start(
+                    onError: { XCTFail("Unexpected error \($0)") },
+                    onChange: { value in
+                        value1 = value
+                        _ = sharedObservation!.start(
+                            onError: { XCTFail("Unexpected error \($0)") },
+                            onChange: { value in
+                                value2 = value
+                            })
+                    })
+                
+                XCTAssertEqual(value1, 0)
+                XCTAssertEqual(value2, 0)
+                XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 0"])
+                
+                cancellable1.cancel()
+                XCTAssertEqual(log.flush(), [])
+            }
         }
         
+        // Deallocate the shared observation
         sharedObservation = nil
         XCTAssertEqual(log.flush(), ["cancel"])
     }
@@ -120,7 +128,7 @@ class SharedValueObservationTests: GRDBTestCase {
             try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
             try XCTAssertEqual(wait(for: recorder.next(), timeout: 1), 1)
         }
-
+        
         do {
             let recorder = publisher.record()
             try XCTAssertEqual(recorder.next().get(), 1)
@@ -148,32 +156,36 @@ class SharedValueObservationTests: GRDBTestCase {
                 extent: .whileObserved)
         XCTAssertEqual(log.flush(), [])
         
-        do {
-            var value: Int?
-            let cancellable = sharedObservation!.start(
-                onError: { XCTFail("Unexpected error \($0)") },
-                onChange: { value = $0 })
+        // We want to control when the shared observation is deallocated
+        withExtendedLifetime(sharedObservation) { sharedObservation in
+            do {
+                var value: Int?
+                let cancellable = sharedObservation!.start(
+                    onError: { XCTFail("Unexpected error \($0)") },
+                    onChange: { value = $0 })
+                
+                XCTAssertEqual(value, 0)
+                XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 0"])
+                
+                cancellable.cancel()
+                XCTAssertEqual(log.flush(), ["cancel"])
+            }
             
-            XCTAssertEqual(value, 0)
-            XCTAssertEqual(log.flush(), ["start", "fetch", "value: 0", "tracked region: player(*)"])
-            
-            cancellable.cancel()
-            XCTAssertEqual(log.flush(), ["cancel"])
+            do {
+                var value: Int?
+                let cancellable = sharedObservation!.start(
+                    onError: { XCTFail("Unexpected error \($0)") },
+                    onChange: { value = $0 })
+                
+                XCTAssertEqual(value, 0)
+                XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 0"])
+                
+                cancellable.cancel()
+                XCTAssertEqual(log.flush(), ["cancel"])
+            }
         }
         
-        do {
-            var value: Int?
-            let cancellable = sharedObservation!.start(
-                onError: { XCTFail("Unexpected error \($0)") },
-                onChange: { value = $0 })
-            
-            XCTAssertEqual(value, 0)
-            XCTAssertEqual(log.flush(), ["start", "fetch", "value: 0", "tracked region: player(*)"])
-            
-            cancellable.cancel()
-            XCTAssertEqual(log.flush(), ["cancel"])
-        }
-
+        // Deallocate the shared observation
         sharedObservation = nil
         XCTAssertEqual(log.flush(), [])
     }
@@ -196,7 +208,8 @@ class SharedValueObservationTests: GRDBTestCase {
                 extent: .whileObserved)
         XCTAssertEqual(log.flush(), [])
         
-        do {
+        // We want to control when the shared observation is deallocated
+        withExtendedLifetime(sharedObservation) { sharedObservation in
             var value1: Int?
             var value2: Int?
             let cancellable1 = sharedObservation!.start(
@@ -212,16 +225,17 @@ class SharedValueObservationTests: GRDBTestCase {
             
             XCTAssertEqual(value1, 0)
             XCTAssertEqual(value2, 0)
-            XCTAssertEqual(log.flush(), ["start", "fetch", "value: 0", "tracked region: player(*)"])
+            XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 0"])
             
             cancellable1.cancel()
             XCTAssertEqual(log.flush(), ["cancel"])
         }
         
+        // Deallocate the shared observation
         sharedObservation = nil
         XCTAssertEqual(log.flush(), [])
     }
-
+    
     func test_async_observationLifetime() throws {
         let dbQueue = try makeDatabaseQueue()
         try dbQueue.write { db in
@@ -240,79 +254,82 @@ class SharedValueObservationTests: GRDBTestCase {
                 extent: .observationLifetime)
         XCTAssertEqual(log.flush(), [])
         
-        // --- Start observation 1
-        var values1: [Int] = []
-        let exp1 = expectation(description: "")
-        exp1.expectedFulfillmentCount = 2
-        exp1.assertForOverFulfill = false
-        let cancellable1 = sharedObservation!.start(
-            onError: { XCTFail("Unexpected error \($0)") },
-            onChange: {
-                values1.append($0)
-                exp1.fulfill()
-            })
-        
-        try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
-        wait(for: [exp1], timeout: 1)
-        XCTAssertEqual(values1, [0, 1])
-        XCTAssertEqual(log.flush(), [
-            "start", "fetch", "value: 0", "tracked region: player(*)",
-            "database did change", "fetch", "value: 1"])
-
-        // --- Start observation 2
-        var values2: [Int] = []
-        let exp2 = expectation(description: "")
-        exp2.expectedFulfillmentCount = 2
-        exp2.assertForOverFulfill = false
-        let cancellable2 = sharedObservation!.start(
-            onError: { XCTFail("Unexpected error \($0)") },
-            onChange: {
-                values2.append($0)
-                exp2.fulfill()
-            })
-        
-        try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
-        wait(for: [exp2], timeout: 1)
-        XCTAssertEqual(values1, [0, 1, 2])
-        XCTAssertEqual(values2, [1, 2])
-        XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 2"])
-
-        // --- Stop observation 1
-        cancellable1.cancel()
-        XCTAssertEqual(log.flush(), [])
-        
-        // --- Start observation 3
-        var values3: [Int] = []
-        let exp3 = expectation(description: "")
-        exp3.expectedFulfillmentCount = 2
-        exp3.assertForOverFulfill = false
-        let cancellable3 = sharedObservation!.start(
-            onError: { XCTFail("Unexpected error \($0)") },
-            onChange: {
-                values3.append($0)
-                exp3.fulfill()
-            })
-        
-        try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
-        wait(for: [exp3], timeout: 1)
-        XCTAssertEqual(values1, [0, 1, 2])
-        XCTAssertEqual(values2, [1, 2, 3])
-        XCTAssertEqual(values3, [2, 3])
-        XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 3"])
-        
-        // --- Stop observation 2
-        cancellable2.cancel()
-        XCTAssertEqual(log.flush(), [])
-        
-        // --- Stop observation 3
-        cancellable3.cancel()
-        XCTAssertEqual(log.flush(), [])
+        // We want to control when the shared observation is deallocated
+        try withExtendedLifetime(sharedObservation) { sharedObservation in
+            // --- Start observation 1
+            var values1: [Int] = []
+            let exp1 = expectation(description: "")
+            exp1.expectedFulfillmentCount = 2
+            exp1.assertForOverFulfill = false
+            let cancellable1 = sharedObservation!.start(
+                onError: { XCTFail("Unexpected error \($0)") },
+                onChange: {
+                    values1.append($0)
+                    exp1.fulfill()
+                })
+            
+            try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
+            wait(for: [exp1], timeout: 1)
+            XCTAssertEqual(values1, [0, 1])
+            XCTAssertEqual(log.flush(), [
+                "start", "fetch", "tracked region: player(*)", "value: 0",
+                "database did change", "fetch", "value: 1"])
+            
+            // --- Start observation 2
+            var values2: [Int] = []
+            let exp2 = expectation(description: "")
+            exp2.expectedFulfillmentCount = 2
+            exp2.assertForOverFulfill = false
+            let cancellable2 = sharedObservation!.start(
+                onError: { XCTFail("Unexpected error \($0)") },
+                onChange: {
+                    values2.append($0)
+                    exp2.fulfill()
+                })
+            
+            try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
+            wait(for: [exp2], timeout: 1)
+            XCTAssertEqual(values1, [0, 1, 2])
+            XCTAssertEqual(values2, [1, 2])
+            XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 2"])
+            
+            // --- Stop observation 1
+            cancellable1.cancel()
+            XCTAssertEqual(log.flush(), [])
+            
+            // --- Start observation 3
+            var values3: [Int] = []
+            let exp3 = expectation(description: "")
+            exp3.expectedFulfillmentCount = 2
+            exp3.assertForOverFulfill = false
+            let cancellable3 = sharedObservation!.start(
+                onError: { XCTFail("Unexpected error \($0)") },
+                onChange: {
+                    values3.append($0)
+                    exp3.fulfill()
+                })
+            
+            try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
+            wait(for: [exp3], timeout: 1)
+            XCTAssertEqual(values1, [0, 1, 2])
+            XCTAssertEqual(values2, [1, 2, 3])
+            XCTAssertEqual(values3, [2, 3])
+            XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 3"])
+            
+            // --- Stop observation 2
+            cancellable2.cancel()
+            XCTAssertEqual(log.flush(), [])
+            
+            // --- Stop observation 3
+            cancellable3.cancel()
+            XCTAssertEqual(log.flush(), [])
+        }
         
         // --- Release shared observation
         sharedObservation = nil
         XCTAssertEqual(log.flush(), ["cancel"])
     }
-
+    
     func test_async_observationLifetime_early_release() throws {
         let dbQueue = try makeDatabaseQueue()
         try dbQueue.write { db in
@@ -342,7 +359,7 @@ class SharedValueObservationTests: GRDBTestCase {
                 
                 switch value {
                 case 0:
-                    XCTAssertEqual(log.flush(), ["start", "fetch", "value: 0", "tracked region: player(*)"])
+                    XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 0"])
                 case 1:
                     XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 1"])
                 case 2:
@@ -387,7 +404,7 @@ class SharedValueObservationTests: GRDBTestCase {
             try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
             try XCTAssertEqual(wait(for: recorder.next(), timeout: 1), 1)
         }
-
+        
         do {
             let recorder = publisher.record()
             try XCTAssert(recorder.availableElements.get().isEmpty)
@@ -416,73 +433,76 @@ class SharedValueObservationTests: GRDBTestCase {
                 extent: .whileObserved)
         XCTAssertEqual(log.flush(), [])
         
-        // --- Start observation 1
-        var values1: [Int] = []
-        let exp1 = expectation(description: "")
-        exp1.expectedFulfillmentCount = 2
-        exp1.assertForOverFulfill = false
-        let cancellable1 = sharedObservation!.start(
-            onError: { XCTFail("Unexpected error \($0)") },
-            onChange: {
-                values1.append($0)
-                exp1.fulfill()
-            })
-        
-        try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
-        wait(for: [exp1], timeout: 1)
-        XCTAssertEqual(values1, [0, 1])
-        XCTAssertEqual(log.flush(), [
-            "start", "fetch", "value: 0", "tracked region: player(*)",
-            "database did change", "fetch", "value: 1"])
-
-        // --- Start observation 2
-        var values2: [Int] = []
-        let exp2 = expectation(description: "")
-        exp2.expectedFulfillmentCount = 2
-        exp2.assertForOverFulfill = false
-        let cancellable2 = sharedObservation!.start(
-            onError: { XCTFail("Unexpected error \($0)") },
-            onChange: {
-                values2.append($0)
-                exp2.fulfill()
-            })
-        
-        try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
-        wait(for: [exp2], timeout: 1)
-        XCTAssertEqual(values1, [0, 1, 2])
-        XCTAssertEqual(values2, [1, 2])
-        XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 2"])
-
-        // --- Stop observation 1
-        cancellable1.cancel()
-        XCTAssertEqual(log.flush(), [])
-        
-        // --- Start observation 3
-        var values3: [Int] = []
-        let exp3 = expectation(description: "")
-        exp3.expectedFulfillmentCount = 2
-        exp3.assertForOverFulfill = false
-        let cancellable3 = sharedObservation!.start(
-            onError: { XCTFail("Unexpected error \($0)") },
-            onChange: {
-                values3.append($0)
-                exp3.fulfill()
-            })
-        
-        try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
-        wait(for: [exp3], timeout: 1)
-        XCTAssertEqual(values1, [0, 1, 2])
-        XCTAssertEqual(values2, [1, 2, 3])
-        XCTAssertEqual(values3, [2, 3])
-        XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 3"])
-        
-        // --- Stop observation 2
-        cancellable2.cancel()
-        XCTAssertEqual(log.flush(), [])
-        
-        // --- Stop observation 3
-        cancellable3.cancel()
-        XCTAssertEqual(log.flush(), ["cancel"])
+        // We want to control when the shared observation is deallocated
+        try withExtendedLifetime(sharedObservation) { sharedObservation in
+            // --- Start observation 1
+            var values1: [Int] = []
+            let exp1 = expectation(description: "")
+            exp1.expectedFulfillmentCount = 2
+            exp1.assertForOverFulfill = false
+            let cancellable1 = sharedObservation!.start(
+                onError: { XCTFail("Unexpected error \($0)") },
+                onChange: {
+                    values1.append($0)
+                    exp1.fulfill()
+                })
+            
+            try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
+            wait(for: [exp1], timeout: 1)
+            XCTAssertEqual(values1, [0, 1])
+            XCTAssertEqual(log.flush(), [
+                "start", "fetch", "tracked region: player(*)", "value: 0",
+                "database did change", "fetch", "value: 1"])
+            
+            // --- Start observation 2
+            var values2: [Int] = []
+            let exp2 = expectation(description: "")
+            exp2.expectedFulfillmentCount = 2
+            exp2.assertForOverFulfill = false
+            let cancellable2 = sharedObservation!.start(
+                onError: { XCTFail("Unexpected error \($0)") },
+                onChange: {
+                    values2.append($0)
+                    exp2.fulfill()
+                })
+            
+            try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
+            wait(for: [exp2], timeout: 1)
+            XCTAssertEqual(values1, [0, 1, 2])
+            XCTAssertEqual(values2, [1, 2])
+            XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 2"])
+            
+            // --- Stop observation 1
+            cancellable1.cancel()
+            XCTAssertEqual(log.flush(), [])
+            
+            // --- Start observation 3
+            var values3: [Int] = []
+            let exp3 = expectation(description: "")
+            exp3.expectedFulfillmentCount = 2
+            exp3.assertForOverFulfill = false
+            let cancellable3 = sharedObservation!.start(
+                onError: { XCTFail("Unexpected error \($0)") },
+                onChange: {
+                    values3.append($0)
+                    exp3.fulfill()
+                })
+            
+            try dbQueue.write { try $0.execute(sql: "INSERT INTO player DEFAULT VALUES")}
+            wait(for: [exp3], timeout: 1)
+            XCTAssertEqual(values1, [0, 1, 2])
+            XCTAssertEqual(values2, [1, 2, 3])
+            XCTAssertEqual(values3, [2, 3])
+            XCTAssertEqual(log.flush(), ["database did change", "fetch", "value: 3"])
+            
+            // --- Stop observation 2
+            cancellable2.cancel()
+            XCTAssertEqual(log.flush(), [])
+            
+            // --- Stop observation 3
+            cancellable3.cancel()
+            XCTAssertEqual(log.flush(), ["cancel"])
+        }
         
         // --- Release shared observation
         sharedObservation = nil
@@ -526,7 +546,7 @@ class SharedValueObservationTests: GRDBTestCase {
             if case .finished = try wait(for: recorder1.completion, timeout: 1) { XCTFail("Expected error") }
             if case .finished = try wait(for: recorder2.completion, timeout: 1) { XCTFail("Expected error") }
             XCTAssertEqual(log.flush(), [
-                "start", "fetch", "value: 0", "tracked region: player(*)",
+                "start", "fetch", "tracked region: player(*)", "value: 0",
                 "database did change", "fetch", "failure: TestError()"])
         }
         
@@ -582,7 +602,7 @@ class SharedValueObservationTests: GRDBTestCase {
             if case .finished = try wait(for: recorder1.completion, timeout: 1) { XCTFail("Expected error") }
             if case .finished = try wait(for: recorder2.completion, timeout: 1) { XCTFail("Expected error") }
             XCTAssertEqual(log.flush(), [
-                "start", "fetch", "value: 0", "tracked region: player(*)",
+                "start", "fetch", "tracked region: player(*)", "value: 0",
                 "database did change", "fetch", "failure: TestError()"])
         }
         
@@ -596,11 +616,11 @@ class SharedValueObservationTests: GRDBTestCase {
             fetchError = nil
             let recorder = publisher.record()
             try XCTAssertEqual(wait(for: recorder.next(), timeout: 1), 1)
-            XCTAssertEqual(log.flush(), ["start", "fetch", "value: 1", "tracked region: player(*)"])
+            XCTAssertEqual(log.flush(), ["start", "fetch", "tracked region: player(*)", "value: 1"])
         }
     }
 #endif
-
+    
 #if compiler(>=5.5.2) && canImport(_Concurrency)
     @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
     func testAsyncAwait() async throws {

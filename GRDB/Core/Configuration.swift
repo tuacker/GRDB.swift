@@ -297,6 +297,8 @@ public struct Configuration {
         (self.label ?? defaultLabel) + (purpose.map { "." + $0 } ?? "")
     }
     
+    /// Creates a DispatchQueue which has the quality of service and target
+    /// queue of write accesses.
     func makeWriterDispatchQueue(label: String) -> DispatchQueue {
         if let targetQueue = writeTargetQueue ?? targetQueue {
             return DispatchQueue(label: label, target: targetQueue)
@@ -305,9 +307,24 @@ public struct Configuration {
         }
     }
     
+    /// Creates a DispatchQueue which has the quality of service and target
+    /// queue of read accesses.
     func makeReaderDispatchQueue(label: String) -> DispatchQueue {
         if let targetQueue = targetQueue {
             return DispatchQueue(label: label, target: targetQueue)
+        } else {
+            return DispatchQueue(label: label, qos: qos)
+        }
+    }
+    
+    /// Creates a DispatchQueue which has the quality of service of
+    /// read accesses.
+    ///
+    /// The returned queue has no target queue, and won't create deadlocks when
+    /// used synchronously from a database access.
+    func makeDispatchQueue(label: String) -> DispatchQueue {
+        if let targetQueue = targetQueue {
+            return DispatchQueue(label: label, qos: targetQueue.qos)
         } else {
             return DispatchQueue(label: label, qos: qos)
         }

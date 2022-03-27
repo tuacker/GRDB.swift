@@ -11,6 +11,7 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 
 #### 5.x Releases
 
+- `5.22.x` Releases - [5.22.0](#5220) | [5.22.1](#5221)
 - `5.21.x` Releases - [5.21.0](#5210)
 - `5.20.x` Releases - [5.20.0](#5200)
 - `5.19.x` Releases - [5.19.0](#5190)
@@ -101,6 +102,19 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 - **Breaking Change**: `DatabaseQueue()` initializer for in-memory databases is now throwing.
 - **Breaking Change**: [#1172](https://github.com/groue/GRDB.swift/pull/1172) by [@groue](https://github.com/groue): Optional is a database value like others
 - **Breaking Change**: [#1117](https://github.com/groue/GRDB.swift/pull/1117) by [@groue](https://github.com/groue): DatabaseDecodingError
+
+## 5.22.1
+
+Released March 26, 2022 &bull; [diff](https://github.com/groue/GRDB.swift/compare/v5.22.0...v5.22.1)
+
+- **Fixed** a 5.22.0 regression: [#1194](https://github.com/groue/GRDB.swift/issues/1194) ValueObservation could deadlock when the database is configured with a serial target DispatchQueue.
+
+## 5.22.0
+
+Released March 22, 2022 &bull; [diff](https://github.com/groue/GRDB.swift/compare/v5.21.0...v5.22.0)
+
+- **New**: [#1186](https://github.com/groue/GRDB.swift/pull/1186) by [@benrb](https://github.com/benrb): DatabaseError provide error message as localizedFailureReason
+- **Breaking Change**: [#1183](https://github.com/groue/GRDB.swift/pull/1183) by [@groue](https://github.com/groue): Starting a ValueObservation keeps a strong reference on the database connection.
 
 ## 5.21.0
 
