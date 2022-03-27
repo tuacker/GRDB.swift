@@ -265,8 +265,8 @@ extension ValueConcurrentObserver {
         }
         
         // Reduce
-        let initialValue: Reducer.Value = reduceQueue.sync {
-            guard let initialValue = reducer._value(fetchedValue) else {
+        let initialValue: Reducer.Value = try reduceQueue.sync {
+            guard let initialValue = try reducer._value(fetchedValue) else {
                 fatalError("Broken contract: reducer has no initial value")
             }
             return initialValue
@@ -323,23 +323,27 @@ extension ValueConcurrentObserver {
                         let isNotifying = self.lock.synchronized { self.notificationCallbacks != nil }
                         guard isNotifying else { return /* Cancelled */ }
                         
-                        guard let initialValue = self.reducer._value(fetchedValue) else {
-                            fatalError("Broken contract: reducer has no initial value")
-                        }
-                        
-                        // Notify
-                        self.scheduler.schedule {
-                            let onChange = self.lock.synchronized { self.notificationCallbacks?.onChange }
-                            guard let onChange = onChange else { return /* Cancelled */ }
-                            onChange(initialValue)
+                        do {
+                            guard let initialValue = try self.reducer._value(fetchedValue) else {
+                                fatalError("Broken contract: reducer has no initial value")
+                            }
+                            
+                            // Notify
+                            self.scheduler.schedule {
+                                let onChange = self.lock.synchronized { self.notificationCallbacks?.onChange }
+                                guard let onChange = onChange else { return /* Cancelled */ }
+                                onChange(initialValue)
+                            }
+                            
+                            // Start observation
+                            self.asyncStartObservation(
+                                from: databaseAccess,
+                                initialSnapshot: initialSnapshot,
+                                initialRegion: initialRegion)
+                        } catch {
+                            self.notifyError(error)
                         }
                     }
-                    
-                    // Start observation
-                    self.asyncStartObservation(
-                        from: databaseAccess,
-                        initialSnapshot: initialSnapshot,
-                        initialRegion: initialRegion)
                 } catch {
                     self.notifyError(error)
                 }
@@ -408,15 +412,23 @@ extension ValueConcurrentObserver {
                             let isNotifying = self.lock.synchronized { self.notificationCallbacks != nil }
                             guard isNotifying else { return /* Cancelled */ }
                             
-                            let value = self.reducer._value(fetchedValue)
-                            
-                            // Notify
-                            if let value = value {
-                                self.scheduler.schedule {
-                                    let onChange = self.lock.synchronized { self.notificationCallbacks?.onChange }
-                                    guard let onChange = onChange else { return /* Cancelled */ }
-                                    onChange(value)
+                            do {
+                                let value = try self.reducer._value(fetchedValue)
+                                
+                                // Notify
+                                if let value = value {
+                                    self.scheduler.schedule {
+                                        let onChange = self.lock.synchronized { self.notificationCallbacks?.onChange }
+                                        guard let onChange = onChange else { return /* Cancelled */ }
+                                        onChange(value)
+                                    }
                                 }
+                            } catch {
+                                let dbPool = self.lock.synchronized { self.databaseAccess?.dbPool }
+                                dbPool?.asyncWriteWithoutTransaction { writerDB in
+                                    self.stopDatabaseObservation(writerDB)
+                                }
+                                self.notifyError(error)
                             }
                         }
                     } else {
