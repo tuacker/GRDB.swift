@@ -382,7 +382,6 @@ extension DatabaseWriter {
     }
 }
 
-#if compiler(>=5.5.2) && canImport(_Concurrency)
 extension DatabaseWriter {
     // MARK: - Asynchronous Database Access
     
@@ -492,8 +491,6 @@ extension DatabaseWriter {
         }
     }
 }
-#endif
-
 
 #if canImport(Combine)
 extension DatabaseWriter {

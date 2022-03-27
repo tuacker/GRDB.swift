@@ -96,7 +96,7 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 ## 6.0.0
 
 - **Breaking Change**: Deprecated methods were removed.
-- **Breaking Change**: Swift 5.5+, Xcode 13+ required
+- **Breaking Change**: Swift 5.6+, Xcode 13.3+ required
 - **Breaking Change**: The `databaseCopy()` method of the Record class has been removed.
 - **Breaking Change**: `DatabaseWriter.barrierWriteWithoutTransaction` is now a throwing method.
 - **Breaking Change**: `DatabaseQueue()` initializer for in-memory databases is now throwing.
