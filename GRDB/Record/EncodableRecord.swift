@@ -382,28 +382,28 @@ public enum DatabaseDateEncodingStrategy {
         return formatter
     }()
     
-    func encode(_ date: Date) -> DatabaseValueConvertible? {
+    func encode(_ date: Date) -> DatabaseValue {
         switch self {
         case .deferredToDate:
             return date.databaseValue
         case .timeIntervalSinceReferenceDate:
-            return date.timeIntervalSinceReferenceDate
+            return date.timeIntervalSinceReferenceDate.databaseValue
         case .timeIntervalSince1970:
-            return date.timeIntervalSince1970
+            return date.timeIntervalSince1970.databaseValue
         case .millisecondsSince1970:
-            return Int64(floor(1000.0 * date.timeIntervalSince1970))
+            return Int64(floor(1000.0 * date.timeIntervalSince1970)).databaseValue
         case .secondsSince1970:
-            return Int64(floor(date.timeIntervalSince1970))
+            return Int64(floor(date.timeIntervalSince1970)).databaseValue
         case .iso8601:
             if #available(macOS 10.12, watchOS 3.0, tvOS 10.0, *) {
-                return Self.iso8601Formatter.string(from: date)
+                return Self.iso8601Formatter.string(from: date).databaseValue
             } else {
                 fatalError("ISO8601DateFormatter is unavailable on this platform.")
             }
         case .formatted(let formatter):
-            return formatter.string(from: date)
+            return formatter.string(from: date).databaseValue
         case .custom(let format):
-            return format(date)
+            return format(date)?.databaseValue ?? .null
         }
     }
 }
@@ -433,14 +433,14 @@ public enum DatabaseUUIDEncodingStrategy {
     /// Encodes UUIDs as lowercased strings such as "e621e1f8-c36c-495a-93fc-0c247a3e6e5f"
     case lowercaseString
     
-    func encode(_ uuid: UUID) -> DatabaseValueConvertible {
+    func encode(_ uuid: UUID) -> DatabaseValue {
         switch self {
         case .deferredToUUID:
             return uuid.databaseValue
         case .uppercaseString:
-            return uuid.uuidString
+            return uuid.uuidString.databaseValue
         case .lowercaseString:
-            return uuid.uuidString.lowercased()
+            return uuid.uuidString.lowercased().databaseValue
         }
     }
 }

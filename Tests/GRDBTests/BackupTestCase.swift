@@ -6,7 +6,7 @@ class BackupTestCase: GRDBTestCase {
     // A "user" error simply for testing purposes
     private class AbandonBackupError: Error {}
     
-    private func setupBackupSource(_ writer: DatabaseWriter) throws -> Int {
+    private func setupBackupSource<Source: DatabaseWriter>(_ writer: Source) throws -> Int {
         try writer.write { db in
             try db.execute(sql: "CREATE TABLE items (id INTEGER PRIMARY KEY)")
             try db.execute(sql: "INSERT INTO items (id) VALUES (0)")
@@ -22,14 +22,16 @@ class BackupTestCase: GRDBTestCase {
         return pageCount
     }
     
-    private func setupBackupDestination(_ writer: DatabaseWriter) throws {
+    private func setupBackupDestination<Destination: DatabaseWriter>(_ writer: Destination) throws {
         try writer.write { db in
             try db.execute(sql: "CREATE TABLE items (id INTEGER PRIMARY KEY)")
             try db.execute(sql: "INSERT INTO items (id) VALUES (1)")
         }
     }
     
-    func testDatabaseWriterBackup(from source: DatabaseWriter, to destination: DatabaseWriter) throws {
+    func testDatabaseWriterBackup<Source, Destination>(from source: Source, to destination: Destination)
+    throws where Source: DatabaseWriter, Destination: DatabaseWriter
+    {
         let sourceDbPageCount = try setupBackupSource(source)
         try setupBackupDestination(destination)
 
@@ -80,7 +82,9 @@ class BackupTestCase: GRDBTestCase {
         }
     }
     
-    func testDatabaseBackup(from source: DatabaseWriter, to destination: DatabaseWriter) throws {
+    func testDatabaseBackup<Source, Destination>(from source: Source, to destination: Destination)
+    throws where Source: DatabaseWriter, Destination: DatabaseWriter
+    {
         let sourceDbPageCount = try setupBackupSource(source)
         try setupBackupDestination(destination)
 

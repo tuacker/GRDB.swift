@@ -59,7 +59,7 @@ extension FastWrapper: StatementColumnConvertible where RawValue: StatementColum
 
 class RawRepresentableDatabaseValueConvertibleTests: GRDBTestCase {
     
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         var migrator = DatabaseMigrator()
         migrator.registerMigration("createPersons") { db in
             try db.execute(sql: "CREATE TABLE wines (grape TEXT, color INTEGER)")

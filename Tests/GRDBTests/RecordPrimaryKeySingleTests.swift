@@ -49,7 +49,7 @@ class Pet : Record, Hashable {
 
 class RecordPrimaryKeySingleTests: GRDBTestCase {
     
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         var migrator = DatabaseMigrator()
         migrator.registerMigration("createPet", migrate: Pet.setup)
         try migrator.migrate(dbWriter)

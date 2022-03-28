@@ -76,21 +76,22 @@ extension DatabaseRegionObservation {
 }
 
 extension DatabaseRegionObservation {
+    #warning("TODO: return a cancellable")
     /// Starts the observation in the provided database writer (such as
     /// a database queue or database pool), and returns a transaction observer.
     ///
-    /// - parameter reader: A DatabaseWriter.
+    /// - parameter writer: A DatabaseWriter.
     /// - parameter onChange: A closure that is provided a database connection
     ///   with write access each time the observed region has been modified.
     /// - returns: a TransactionObserver
     public func start(
-        in dbWriter: DatabaseWriter,
+        in writer: DatabaseWriter,
         onChange: @escaping (Database) -> Void)
     throws -> TransactionObserver
     {
         // Use unsafeReentrantWrite so that observation can start from any
         // dispatch queue.
-        return try dbWriter.unsafeReentrantWrite { db -> TransactionObserver in
+        try writer.unsafeReentrantWrite { db in
             let region = try observedRegion(db).observableRegion(db)
             let observer = DatabaseRegionObserver(region: region, onChange: onChange)
             db.add(transactionObserver: observer, extent: extent)
@@ -111,7 +112,7 @@ extension DatabaseRegionObservation {
     /// Error completion, if any, is only emitted, synchronously,
     /// on subscription.
     @available(OSX 10.15, iOS 13, tvOS 13, watchOS 6, *)
-    public func publisher(in writer: DatabaseWriter) -> DatabasePublishers.DatabaseRegion {
+    public func publisher<Writer: DatabaseWriter>(in writer: Writer) -> DatabasePublishers.DatabaseRegion {
         DatabasePublishers.DatabaseRegion(self, in: writer)
     }
 }
@@ -163,7 +164,7 @@ extension DatabasePublishers {
         let writer: DatabaseWriter
         let observation: DatabaseRegionObservation
         
-        init(_ observation: DatabaseRegionObservation, in writer: DatabaseWriter) {
+        init<Writer: DatabaseWriter>(_ observation: DatabaseRegionObservation, in writer: Writer) {
             self.writer = writer
             self.observation = observation
         }

@@ -169,14 +169,14 @@ public protocol _RowAdapter {
     ///     // column named "foo" whose value is the leftmost value of the
     ///     // base row.
     ///     struct FirstColumnAdapter : RowAdapter {
-    ///         func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    ///         func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
     ///             return _LayoutedColumnMapping(layoutColumns: [(0, "foo")])
     ///         }
     ///     }
     ///
     ///     // [foo:1]
     ///     try Row.fetchOne(db, sql: "SELECT 1, 2, 3", adapter: FirstColumnAdapter())
-    func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter
+    func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter
 }
 
 /// `RowAdapter` is a protocol that helps two incompatible row interfaces
@@ -218,7 +218,7 @@ extension RowAdapter {
 }
 
 extension RowAdapter {
-    func baseColumnIndex(atIndex index: Int, layout: _RowLayout) throws -> Int {
+    func baseColumnIndex<T: _RowLayout>(atIndex index: Int, layout: T) throws -> Int {
         try _layoutedAdapter(from: layout)._mapping.baseColumnIndex(atMappingIndex: index)
     }
 }
@@ -229,7 +229,7 @@ public struct EmptyRowAdapter: RowAdapter {
     public init() { }
     
     /// :nodoc:
-    public func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    public func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         _LayoutedColumnMapping(layoutColumns: [])
     }
 }
@@ -252,7 +252,7 @@ public struct ColumnMapping: RowAdapter {
     }
     
     /// :nodoc:
-    public func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    public func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         let layoutColumns = try mapping
             .map { (mappedColumn, baseColumn) -> (Int, String) in
                 guard let index = layout._layoutIndex(ofColumn: baseColumn) else {
@@ -293,7 +293,7 @@ public struct SuffixRowAdapter: RowAdapter {
     }
     
     /// :nodoc:
-    public func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    public func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         _LayoutedColumnMapping(layoutColumns: layout._layoutColumns.suffix(from: index))
     }
 }
@@ -322,7 +322,7 @@ public struct RangeRowAdapter: RowAdapter {
     }
     
     /// :nodoc:
-    public func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    public func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         _LayoutedColumnMapping(layoutColumns: layout._layoutColumns[range])
     }
 }
@@ -398,7 +398,7 @@ public struct ScopeAdapter: RowAdapter {
     }
     
     /// :nodoc:
-    public func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    public func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         let layoutedAdapter = try base._layoutedAdapter(from: layout)
         var layoutedScopes = layoutedAdapter._scopes
         for (name, adapter) in scopes {
@@ -420,7 +420,7 @@ struct ChainedAdapter: RowAdapter {
     let first: RowAdapter
     let second: RowAdapter
     
-    func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         try second._layoutedAdapter(from: first._layoutedAdapter(from: layout)._mapping)
     }
 }
@@ -444,7 +444,7 @@ public struct RenameColumnAdapter: RowAdapter {
     }
     
     /// :nodoc:
-    public func _layoutedAdapter(from layout: _RowLayout) throws -> _LayoutedRowAdapter {
+    public func _layoutedAdapter<Layout: _RowLayout>(from layout: Layout) throws -> _LayoutedRowAdapter {
         let layoutColumns = layout._layoutColumns.map { (index, column) in (index, transform(column)) }
         return _LayoutedColumnMapping(layoutColumns: layoutColumns)
     }
@@ -457,7 +457,7 @@ extension Row {
     }
     
     /// Returns self if adapter is nil
-    func adapted(with adapter: RowAdapter?, layout: _RowLayout) throws -> Row {
+    func adapted<Layout: _RowLayout>(with adapter: RowAdapter?, layout: Layout) throws -> Row {
         guard let adapter = adapter else {
             return self
         }

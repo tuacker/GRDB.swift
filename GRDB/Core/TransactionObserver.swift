@@ -9,8 +9,8 @@ extension Database {
     /// - parameter extent: The duration of the observation. The default is
     ///   the observer lifetime (observation lasts until observer
     ///   is deallocated).
-    public func add(
-        transactionObserver: TransactionObserver,
+    public func add<T: TransactionObserver>(
+        transactionObserver: T,
         extent: TransactionObservationExtent = .observerLifetime)
     {
         SchedulingWatchdog.preconditionValidQueue(self)
@@ -24,7 +24,7 @@ extension Database {
     }
     
     /// Remove a transaction observer.
-    public func remove(transactionObserver: TransactionObserver) {
+    public func remove<T: TransactionObserver>(transactionObserver: T) {
         SchedulingWatchdog.preconditionValidQueue(self)
         
         // Drop cached statements that delete, because the removal of an
@@ -193,15 +193,15 @@ class DatabaseObservationBroker {
     
     // MARK: - Transaction observers
     
-    func add(transactionObserver: TransactionObserver, extent: Database.TransactionObservationExtent) {
+    func add<T: TransactionObserver>(transactionObserver: T, extent: Database.TransactionObservationExtent) {
         transactionObservations.append(TransactionObservation(observer: transactionObserver, extent: extent))
     }
     
-    func remove(transactionObserver: TransactionObserver) {
+    func remove<T: TransactionObserver>(transactionObserver: T) {
         transactionObservations.removeFirst { $0.isWrapping(transactionObserver) }
     }
     
-    func disableUntilNextTransaction(transactionObserver: TransactionObserver) {
+    func disableUntilNextTransaction<T: TransactionObserver>(transactionObserver: T) {
         if let observation = transactionObservations.first(where: { $0.isWrapping(transactionObserver) }) {
             observation.isDisabled = true
             statementObservations.removeFirst { $0.0 === observation }
@@ -802,7 +802,7 @@ final class TransactionObservation {
         observer != nil
     }
     
-    init(observer: TransactionObserver, extent: Database.TransactionObservationExtent) {
+    init<T: TransactionObserver>(observer: T, extent: Database.TransactionObservationExtent) {
         self.extent = extent
         switch extent {
         case .observerLifetime:
@@ -815,7 +815,7 @@ final class TransactionObservation {
         }
     }
     
-    func isWrapping(_ observer: TransactionObserver) -> Bool {
+    func isWrapping<T: TransactionObserver>(_ observer: T) -> Bool {
         self.observer === observer
     }
     

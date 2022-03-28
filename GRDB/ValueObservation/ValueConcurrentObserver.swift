@@ -186,7 +186,7 @@ final class ValueConcurrentObserver<Reducer: ValueReducer> {
 // 2. Make sure we do not miss a change (a documented guarantee)
 extension ValueConcurrentObserver {
     // Starts the observation
-    func start() -> DatabaseCancellable {
+    func start() -> AnyDatabaseCancellable {
         let (notificationCallbacks, databaseAccess) = lock.synchronized {
             (self.notificationCallbacks, self.databaseAccess)
         }

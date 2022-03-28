@@ -131,7 +131,7 @@ private class PersonWithModifiedCaseColumns: Record {
 
 class RecordEditedTests: GRDBTestCase {
     
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         var migrator = DatabaseMigrator()
         migrator.registerMigration("createPerson", migrate: Person.setup)
         try migrator.migrate(dbWriter)

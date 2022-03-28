@@ -32,6 +32,7 @@
 - [ ] GRDB 6: support for RETURNING
 - [ ] GRDB 6: allow mutating `update` (for timestamps)
 - [?] GRDB 6: let record choose persistence table (insert(into:) ?)
+- [?] GRDB 6: Support opaque return types (macOS Catalina, iOS 13, tvOS 13, watchOS 6 and later: https://stackoverflow.com/questions/56518406)
 - [ ] Long run edition. Use case: user edits the database (CRUD) but the application wants to commit and the end of the editing session.
     * Create an edition SQLite connection with an open transaction (a new kind of DatabaseWriter with a save() method)
     * All other writes will fail with SQLITE_BUSY. Unless they are schedules in a target dispatch queue which is paused during the edition.

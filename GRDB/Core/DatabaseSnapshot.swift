@@ -114,7 +114,7 @@ extension DatabaseSnapshot {
         observation: ValueObservation<Reducer>,
         scheduling scheduler: ValueObservationScheduler,
         onChange: @escaping (Reducer.Value) -> Void)
-    -> DatabaseCancellable
+    -> AnyDatabaseCancellable
     {
         _addReadOnly(
             observation: observation,

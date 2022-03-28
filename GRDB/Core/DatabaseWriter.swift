@@ -287,14 +287,14 @@ extension DatabaseWriter {
     /// - parameter extent: The duration of the observation. The default is
     ///   the observer lifetime (observation lasts until observer
     ///   is deallocated).
-    public func add(
-        transactionObserver: TransactionObserver,
+    public func add<T: TransactionObserver>(
+        transactionObserver: T,
         extent: Database.TransactionObservationExtent = .observerLifetime)
     {
         writeWithoutTransaction { $0.add(transactionObserver: transactionObserver, extent: extent) }
     }
     
-    public func remove(transactionObserver: TransactionObserver) {
+    public func remove<T: TransactionObserver>(transactionObserver: T) {
         writeWithoutTransaction { $0.remove(transactionObserver: transactionObserver) }
     }
     
@@ -367,7 +367,7 @@ extension DatabaseWriter {
         observation: ValueObservation<Reducer>,
         scheduling scheduler: ValueObservationScheduler,
         onChange: @escaping (Reducer.Value) -> Void)
-    -> DatabaseCancellable
+    -> AnyDatabaseCancellable
     {
         assert(!configuration.readonly, "Use _addReadOnly(observation:) instead")
         let observer = ValueWriteOnlyObserver(
@@ -691,7 +691,7 @@ public final class AnyDatabaseWriter: DatabaseWriter {
     private let base: DatabaseWriter
     
     /// Creates a database writer that wraps a base database writer.
-    public init(_ base: DatabaseWriter) {
+    public init<Base: DatabaseWriter>(_ base: Base) {
         self.base = base
     }
     
@@ -785,7 +785,7 @@ public final class AnyDatabaseWriter: DatabaseWriter {
         observation: ValueObservation<Reducer>,
         scheduling scheduler: ValueObservationScheduler,
         onChange: @escaping (Reducer.Value) -> Void)
-    -> DatabaseCancellable
+    -> AnyDatabaseCancellable
     {
         base._add(
             observation: observation,

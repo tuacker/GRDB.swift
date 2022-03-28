@@ -198,7 +198,7 @@ private struct CodableNestedModel: FetchableRecord, Codable {
 
 class JoinSupportTests: GRDBTestCase {
     
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         try dbWriter.write { db in
             try db.create(table: "t1") { t in
                 t.column("id", .integer).primaryKey()

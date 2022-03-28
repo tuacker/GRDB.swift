@@ -1035,7 +1035,7 @@ public final class ColumnDefinition {
     /// - parameter value: A DatabaseValueConvertible value.
     /// - returns: Self so that you can further refine the column definition.
     @discardableResult
-    public func defaults(to value: DatabaseValueConvertible) -> Self {
+    public func defaults<T: DatabaseValueConvertible>(to value: T) -> Self {
         defaultExpression = value.sqlExpression
         return self
     }

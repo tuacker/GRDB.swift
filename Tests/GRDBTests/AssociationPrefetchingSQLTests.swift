@@ -7,7 +7,7 @@ private struct C: TableRecord { }
 private struct D: TableRecord { }
 
 class AssociationPrefetchingSQLTests: GRDBTestCase {
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         // A.hasMany(B)
         // A.hasMany(C)
         // B.belongsTo(A)

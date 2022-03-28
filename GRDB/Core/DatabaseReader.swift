@@ -281,14 +281,14 @@ public protocol DatabaseReader: AnyObject, Sendable {
     /// method instead.
     ///
     /// - parameter observation: the stared observation
-    /// - returns: a TransactionObserver
+    /// - returns: a cancellable
     ///
     /// :nodoc:
     func _add<Reducer: ValueReducer>(
         observation: ValueObservation<Reducer>,
         scheduling scheduler: ValueObservationScheduler,
         onChange: @escaping (Reducer.Value) -> Void)
-    -> DatabaseCancellable
+    -> AnyDatabaseCancellable
 }
 
 extension DatabaseReader {
@@ -340,8 +340,8 @@ extension DatabaseReader {
     ///       progress.
     /// - throws: The error thrown by `progress` if the backup is abandoned, or
     ///   any `DatabaseError` that would happen while performing the backup.
-    public func backup(
-        to writer: DatabaseWriter,
+    public func backup<Writer: DatabaseWriter>(
+        to writer: Writer,
         pagesPerStep: Int32 = -1,
         progress: ((DatabaseBackupProgress) throws -> Void)? = nil)
     throws
@@ -555,7 +555,7 @@ extension DatabaseReader {
         observation: ValueObservation<Reducer>,
         scheduling scheduler: ValueObservationScheduler,
         onChange: @escaping (Reducer.Value) -> Void)
-    -> DatabaseCancellable
+    -> AnyDatabaseCancellable
     {
         if scheduler.immediateInitialValue() {
             do {
@@ -602,7 +602,7 @@ public final class AnyDatabaseReader: DatabaseReader {
     private let base: DatabaseReader
     
     /// Creates a database reader that wraps a base database reader.
-    public init(_ base: DatabaseReader) {
+    public init<Base: DatabaseReader>(_ base: Base) {
         self.base = base
     }
     
@@ -651,7 +651,7 @@ public final class AnyDatabaseReader: DatabaseReader {
         observation: ValueObservation<Reducer>,
         scheduling scheduler: ValueObservationScheduler,
         onChange: @escaping (Reducer.Value) -> Void)
-    -> DatabaseCancellable
+    -> AnyDatabaseCancellable
     {
         base._add(
             observation: observation,

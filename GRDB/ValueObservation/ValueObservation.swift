@@ -88,7 +88,7 @@ struct ValueObservationEvents: Refinable {
 typealias ValueObservationStart<T> = (
     _ onError: @escaping (Error) -> Void,
     _ onChange: @escaping (T) -> Void)
--> DatabaseCancellable
+-> AnyDatabaseCancellable
 
 extension ValueObservation: Refinable {
     
@@ -137,12 +137,13 @@ extension ValueObservation: Refinable {
     /// - parameter onError: A closure that is provided eventual errors that
     ///   happen during observation
     /// - parameter onChange: A closure that is provided fresh values
-    /// - returns: a DatabaseCancellable
-    public func start(
-        in reader: DatabaseReader,
+    /// - returns: a cancellable.
+    public func start<Reader: DatabaseReader>(
+        in reader: Reader,
         scheduling scheduler: ValueObservationScheduler = .async(onQueue: .main),
         onError: @escaping (Error) -> Void,
-        onChange: @escaping (Reducer.Value) -> Void) -> DatabaseCancellable
+        onChange: @escaping (Reducer.Value) -> Void)
+    -> AnyDatabaseCancellable
     {
         let observation = self.with {
             $0.events.didFail = concat($0.events.didFail, onError)
@@ -263,8 +264,8 @@ extension ValueObservation {
     /// - parameter scheduler: A Scheduler. By default, fresh values are
     ///   dispatched asynchronously on the main queue.
     @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-    public func values(
-        in reader: DatabaseReader,
+    public func values<Reader: DatabaseReader>(
+        in reader: Reader,
         scheduling scheduler: ValueObservationScheduler = .async(onQueue: .main),
         bufferingPolicy: AsyncValueObservation<Reducer.Value>.BufferingPolicy = .unbounded)
     -> AsyncValueObservation<Reducer.Value>
@@ -309,7 +310,7 @@ public struct AsyncValueObservation<Element>: AsyncSequence {
         // the iterator.
         var cancellable: AnyDatabaseCancellable?
         let stream = AsyncThrowingStream(Element.self, bufferingPolicy: bufferingPolicy) { continuation in
-            cancellable = AnyDatabaseCancellable(start(
+            cancellable = start(
                 // onError
                 { error in
                     continuation.finish(throwing: error)
@@ -320,7 +321,7 @@ public struct AsyncValueObservation<Element>: AsyncSequence {
                         // TODO: I could never see this code running. Is it needed?
                         cancellable?.cancel()
                     }
-                }))
+                })
             continuation.onTermination = { @Sendable [weak cancellable] _ in
                 cancellable?.cancel()
             }
@@ -395,8 +396,8 @@ extension ValueObservation {
     ///   dispatched asynchronously on the main queue.
     /// - returns: A Combine publisher
     @available(OSX 10.15, iOS 13, tvOS 13, watchOS 6, *)
-    public func publisher(
-        in reader: DatabaseReader,
+    public func publisher<Reader: DatabaseReader>(
+        in reader: Reader,
         scheduling scheduler: ValueObservationScheduler = .async(onQueue: .main))
     -> DatabasePublishers.Value<Reducer.Value>
     {
@@ -458,7 +459,7 @@ extension DatabasePublishers {
         // Cancellable is not stored in self.state because we must enter the
         // .observing state *before* the observation starts, so that the user
         // can change the state even before the cancellable is known.
-        private var cancellable: DatabaseCancellable?
+        private var cancellable: AnyDatabaseCancellable?
         private var state: State
         private var lock = NSRecursiveLock() // Allow re-entrancy
         

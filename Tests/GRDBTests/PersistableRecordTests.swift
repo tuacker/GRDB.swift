@@ -106,7 +106,7 @@ private struct Citizenship : PersistableRecord {
 
 class PersistableRecordTests: GRDBTestCase {
     
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         var migrator = DatabaseMigrator()
         migrator.registerMigration("setUp") { db in
             try db.execute(sql: """

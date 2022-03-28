@@ -174,12 +174,12 @@ public class ValueObservationRecorder<Value> {
         }
     }
     
-    fileprivate func receive(_ cancellable: DatabaseCancellable) {
+    fileprivate func receive(_ cancellable: AnyDatabaseCancellable) {
         synchronized {
             if state.cancellable != nil {
                 XCTFail("ValueObservationRecorder is already observing")
             }
-            state.cancellable = AnyDatabaseCancellable(cancellable)
+            state.cancellable = cancellable
         }
     }
 }
@@ -217,8 +217,8 @@ extension ValueObservationRecorder {
 // MARK: - ValueObservation + ValueObservationRecorder
 
 extension ValueObservation {
-    public func record(
-        in reader: DatabaseReader,
+    public func record<Reader: DatabaseReader>(
+        in reader: Reader,
         scheduling scheduler: ValueObservationScheduler = .async(onQueue: .main),
         onError: ((Error) -> Void)? = nil,
         onChange: ((Reducer.Value) -> Void)? = nil)
@@ -390,7 +390,7 @@ extension GRDBTestCase {
             scheduling scheduler: ValueObservationScheduler,
             testValueDispatching: @escaping () -> Void) throws
         {
-            func testRecordingEqualWhenWriteAfterStart(writer: DatabaseWriter) throws {
+            func testRecordingEqualWhenWriteAfterStart<Writer: DatabaseWriter>(writer: Writer) throws {
                 try writer.write(setup)
                 
                 var value: Reducer.Value?
@@ -417,7 +417,7 @@ extension GRDBTestCase {
                     "\(#function), \(writer), \(scheduler)", file: file, line: line)
             }
             
-            func testRecordingEqualWhenWriteAfterFirstValue(writer: DatabaseWriter) throws {
+            func testRecordingEqualWhenWriteAfterFirstValue<Writer: DatabaseWriter>(writer: Writer) throws {
                 try writer.write(setup)
                 
                 var valueCount = 0
@@ -447,7 +447,7 @@ extension GRDBTestCase {
                     "\(#function), \(writer), \(scheduler)", file: file, line: line)
             }
             
-            func testRecordingMatchWhenWriteAfterStart(writer: DatabaseWriter) throws {
+            func testRecordingMatchWhenWriteAfterStart<Writer: DatabaseWriter>(writer: Writer) throws {
                 try writer.write(setup)
                 
                 var value: Reducer.Value?
@@ -492,7 +492,7 @@ extension GRDBTestCase {
                     "\(#function), \(writer), \(scheduler)", file: file, line: line)
             }
             
-            func testRecordingMatchWhenWriteAfterFirstValue(writer: DatabaseWriter) throws {
+            func testRecordingMatchWhenWriteAfterFirstValue<Writer: DatabaseWriter>(writer: Writer) throws {
                 try writer.write(setup)
                 
                 var valueCount = 0
@@ -607,7 +607,7 @@ extension GRDBTestCase {
             scheduling scheduler: ValueObservationScheduler,
             testErrorDispatching: @escaping () -> Void) throws
         {
-            func test(writer: DatabaseWriter) throws {
+            func test<Writer: DatabaseWriter>(writer: Writer) throws {
                 try writer.write(setup)
                 
                 let recorder = observation.record(

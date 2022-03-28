@@ -55,7 +55,7 @@ private class Item : Record, Hashable {
 
 class RecordPrimaryKeyNoneTests: GRDBTestCase {
     
-    override func setup(_ dbWriter: DatabaseWriter) throws {
+    override func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
         var migrator = DatabaseMigrator()
         migrator.registerMigration("createItem", migrate: Item.setup)
         try migrator.migrate(dbWriter)

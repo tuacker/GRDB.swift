@@ -49,7 +49,7 @@ class GRDBTestCase: XCTestCase {
     
     // Subclasses can override
     // Default implementation is empty.
-    func setup(_ dbWriter: DatabaseWriter) throws {
+    func setup<Writer: DatabaseWriter>(_ dbWriter: Writer) throws {
     }
     
     // The default path for database pool directory
@@ -125,7 +125,7 @@ class GRDBTestCase: XCTestCase {
         XCTAssertTrue(sqlQueries.contains(sql), "Did not execute \(sql)", file: file, line: line)
     }
     
-    func assert(_ record: EncodableRecord, isEncodedIn row: Row, file: StaticString = #filePath, line: UInt = #line) {
+    func assert<Record: EncodableRecord>(_ record: Record, isEncodedIn row: Row, file: StaticString = #filePath, line: UInt = #line) {
         let recordDict = record.databaseDictionary
         let rowDict = Dictionary(row, uniquingKeysWith: { (left, _) in left })
         XCTAssertEqual(recordDict, rowDict, file: file, line: line)

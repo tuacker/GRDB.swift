@@ -369,8 +369,8 @@ public struct AnyDatabaseRegionConvertible: DatabaseRegionConvertible {
         _region = region
     }
     
-    public init(_ region: DatabaseRegionConvertible) {
-        _region = { try region.databaseRegion($0) }
+    public init<T: DatabaseRegionConvertible>(_ region: T) {
+        _region = region.databaseRegion
     }
     
     /// :nodoc:
