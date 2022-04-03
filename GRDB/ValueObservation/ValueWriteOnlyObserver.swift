@@ -154,7 +154,8 @@ extension ValueWriteOnlyObserver {
             (self.notificationCallbacks, self.databaseAccess?.writer)
         }
         guard let notificationCallbacks = notificationCallbacks, let writer = writer else {
-            // Likely a GRDB bug
+            // Likely a GRDB bug: during a synchronous start, user is not
+            // able to cancel observation.
             fatalError("can't start a cancelled or failed observation")
         }
         
@@ -197,7 +198,11 @@ extension ValueWriteOnlyObserver {
         // from a database access.
         try writer.unsafeReentrantWrite { db in
             // Fetch & Start observing the database
-            let fetchedValue = try fetchAndStartObservation(db)
+            guard let fetchedValue = try fetchAndStartObservation(db) else {
+                // Likely a GRDB bug: during a synchronous start, user is not
+                // able to cancel observation.
+                fatalError("can't start a cancelled or failed observation")
+            }
             
             // Reduce
             return try reduceQueue.sync {
@@ -217,12 +222,11 @@ extension ValueWriteOnlyObserver {
         // Start from a write access, so that self can register as a
         // transaction observer.
         writer.asyncWriteWithoutTransaction { db in
-            let isNotifying = self.lock.synchronized { self.notificationCallbacks != nil }
-            guard isNotifying else { return /* Cancelled */ }
-            
             do {
                 // Fetch & Start observing the database
-                let fetchedValue = try self.fetchAndStartObservation(db)
+                guard let fetchedValue = try self.fetchAndStartObservation(db) else {
+                    return /* Cancelled */
+                }
                 
                 // Reduce
                 //
@@ -263,16 +267,18 @@ extension ValueWriteOnlyObserver {
     
     /// Fetches the initial value, and start observing the database.
     ///
+    /// Returns nil if the observation was cancelled before database observation
+    /// could start.
+    ///
     /// By grouping the initial fetch and the beginning of observation in a
     /// single database access, we are sure that no concurrent write can happen
     /// during the initial fetch, and that we won't miss any future change.
-    private func fetchAndStartObservation(_ db: Database) throws -> Reducer.Fetched {
+    private func fetchAndStartObservation(_ db: Database) throws -> Reducer.Fetched? {
         let (events, fetch) = lock.synchronized {
             (notificationCallbacks?.events, databaseAccess?.fetch)
         }
         guard let events = events, let fetch = fetch else {
-            // Likely a GRDB bug
-            fatalError("can't start a cancelled or failed observation")
+            return nil /* Cancelled */
         }
         
         switch trackingMode {

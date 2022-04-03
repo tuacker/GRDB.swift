@@ -11,7 +11,7 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 
 #### 5.x Releases
 
-- `5.22.x` Releases - [5.22.0](#5220) | [5.22.1](#5221)
+- `5.22.x` Releases - [5.22.0](#5220) | [5.22.1](#5221) | [5.22.2](#5222)
 - `5.21.x` Releases - [5.21.0](#5210)
 - `5.20.x` Releases - [5.20.0](#5200)
 - `5.19.x` Releases - [5.19.0](#5190)
@@ -102,6 +102,12 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 - **Breaking Change**: `DatabaseQueue()` initializer for in-memory databases is now throwing.
 - **Breaking Change**: [#1172](https://github.com/groue/GRDB.swift/pull/1172) by [@groue](https://github.com/groue): Optional is a database value like others
 - **Breaking Change**: [#1117](https://github.com/groue/GRDB.swift/pull/1117) by [@groue](https://github.com/groue): DatabaseDecodingError
+
+## 5.22.2
+
+Released April 2, 2022 &bull; [diff](https://github.com/groue/GRDB.swift/compare/v5.22.1...v5.22.2)
+
+- **Fixed** a 5.22.0 regression: [#1196](https://github.com/groue/GRDB.swift/pull/1196) by [@layoutSubviews](https://github.com/layoutSubviews): Fix a crash when an observation is quickly cancelled
 
 ## 5.22.1
 
