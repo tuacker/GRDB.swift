@@ -5,6 +5,15 @@ private struct TestError : Error { }
 
 class CursorTests: GRDBTestCase {
     
+    func testIsEmpty() {
+        XCTAssertTrue(try AnyCursor([Int]()).isEmpty)
+        
+        let cursor = AnyCursor([1, 2])
+        XCTAssertFalse(try cursor.isEmpty)
+        XCTAssertFalse(try cursor.isEmpty)
+        XCTAssertTrue(try cursor.isEmpty)
+    }
+    
     func testContainsEquatable() {
         XCTAssertTrue(try AnyCursor([1, 2]).contains(1))
         XCTAssertFalse(try AnyCursor([1, 2]).contains(3))
