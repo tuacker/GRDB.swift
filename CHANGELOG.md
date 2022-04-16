@@ -11,6 +11,7 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 
 #### 5.x Releases
 
+- `5.23.x` Releases - [5.23.0](#5230)
 - `5.22.x` Releases - [5.22.0](#5220) | [5.22.1](#5221) | [5.22.2](#5222)
 - `5.21.x` Releases - [5.21.0](#5210)
 - `5.20.x` Releases - [5.20.0](#5200)
@@ -103,6 +104,12 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 - **Breaking Change**: `Cursor.isEmpty` is now a property.
 - **Breaking Change**: [#1172](https://github.com/groue/GRDB.swift/pull/1172) by [@groue](https://github.com/groue): Optional is a database value like others
 - **Breaking Change**: [#1117](https://github.com/groue/GRDB.swift/pull/1117) by [@groue](https://github.com/groue): DatabaseDecodingError
+
+## 5.23.0
+
+Released April 16, 2022 &bull; [diff](https://github.com/groue/GRDB.swift/compare/v5.22.2...v5.23.0)
+
+- **Breaking Change**: [#1200](https://github.com/groue/GRDB.swift/pull/1200) by [@groue](https://github.com/groue): Require Swift 5.6 Compiler for experimental Concurrency Support
 
 ## 5.22.2
 
