@@ -4,7 +4,7 @@ import XCTest
 class BackupTestCase: GRDBTestCase {
     
     // A "user" error simply for testing purposes
-    private class AbandonBackupError: Error {}
+    private struct AbandonBackupError: Error {}
     
     private func setupBackupSource<Source: DatabaseWriter>(_ writer: Source) throws -> Int {
         try writer.write { db in

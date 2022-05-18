@@ -27,7 +27,7 @@ public enum DatabaseDecodingError: Error {
     }
     
     /// The key that was not found in the database row.
-    public enum Key: CustomStringConvertible {
+    public enum Key: CustomStringConvertible, Sendable {
         /// A column was not found
         case column(String)
         
