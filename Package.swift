@@ -54,6 +54,7 @@ let package = Package(
                 "SPM",
                 "generatePerformanceReport.rb",
                 "parsePerformanceTests.rb",
+                "GRDBTests/getThreadsCount.c",
             ],
             resources: [
                 .copy("GRDBTests/Betty.jpeg"),

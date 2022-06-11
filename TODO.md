@@ -28,6 +28,11 @@
 - [ ] GRDB 6: encoding errors for record (`EncodableRecord.encode(to:)`)
 - [?] GRDB 6: protocol-based record container? This could avoid computing & encoding values we do not need. 
 - [ ] GRDB 6: encoding & statement binding errors for database values (conversion to DatabaseValue, statement binding, etc)
+- [ ] GRDB 6: Swift 5.7
+- [ ] GRDB 6: any / some
+- [ ] GRDB 6: primary associated types (cursor, requests, ...)
+- [ ] GRDB 6: remove existential/generic duplicated methods
+- [ ] GRDB 6: remove useless AnyXXX Type erasers
 - [ ] GRDB 6: conflict resolution in persistence methods
 - [ ] GRDB 6: UPSERT
 - [ ] GRDB 6: support for RETURNING

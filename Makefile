@@ -8,7 +8,7 @@
 # make distclean - Restore repository to a pristine state
 
 default: test
-smokeTest: test_framework_GRDBiOS_maxTarget test_framework_GRDBiOS_minTarget test_framework_SQLCipher4 test_framework_GRDBCustomSQLiteiOS_maxTarget test_SPM
+smokeTest: test_framework_GRDBiOS_maxTarget test_framework_GRDBiOS_minTarget test_framework_SQLCipher4Encrypted test_framework_GRDBCustomSQLiteiOS_maxTarget test_SPM
 
 # Requirements
 # ============
@@ -50,7 +50,25 @@ TEST_ACTIONS = clean build build-for-testing test-without-building
 
 # When adding support for an Xcode version, look for available devices with
 # `xcrun xctrace list devices` (or the deprecated `instruments -s devices`).
-ifeq ($(XCODEVERSION),13.3)
+ifeq ($(XCODEVERSION),14.0)
+  MAX_SWIFT_VERSION = 5.7
+  MIN_SWIFT_VERSION = 5.3
+  MAX_IOS_DESTINATION = "platform=iOS Simulator,name=iPhone 13,OS=16.0"
+  MIN_IOS_DESTINATION = "platform=iOS Simulator,name=iPhone 8,OS=12.4"
+  MAX_TVOS_DESTINATION = "platform=tvOS Simulator,name=Apple TV,OS=16.0"
+  #MIN_TVOS_DESTINATION = "platform=tvOS Simulator,name=Apple TV,OS=11.4" TODO: restore
+  OTHER_SWIFT_FLAGS = '$$(inherited) -D SQLITE_ENABLE_FTS5 -D SQLITE_ENABLE_PREUPDATE_HOOK -Xfrontend -warn-concurrency -Xfrontend -enable-actor-data-race-checks'
+  GCC_PREPROCESSOR_DEFINITIONS = '$$(inherited) GRDB_SQLITE_ENABLE_PREUPDATE_HOOK=1'
+else ifeq ($(XCODEVERSION),13.4)
+  MAX_SWIFT_VERSION = 5.6
+  MIN_SWIFT_VERSION = 5.3
+  MAX_IOS_DESTINATION = "platform=iOS Simulator,name=iPhone 13,OS=15.5"
+  MIN_IOS_DESTINATION = "platform=iOS Simulator,name=iPhone 8,OS=13.7"
+  MAX_TVOS_DESTINATION = "platform=tvOS Simulator,name=Apple TV,OS=15.4"
+  #MIN_TVOS_DESTINATION = "platform=tvOS Simulator,name=Apple TV,OS=11.4" TODO: restore
+  OTHER_SWIFT_FLAGS = '$$(inherited) -D SQLITE_ENABLE_FTS5 -D SQLITE_ENABLE_PREUPDATE_HOOK -Xfrontend -warn-concurrency -Xfrontend -enable-actor-data-race-checks'
+  GCC_PREPROCESSOR_DEFINITIONS = '$$(inherited) GRDB_SQLITE_ENABLE_PREUPDATE_HOOK=1'
+else ifeq ($(XCODEVERSION),13.3)
   MAX_SWIFT_VERSION = 5.6
   MIN_SWIFT_VERSION = 5.3
   MAX_IOS_DESTINATION = "platform=iOS Simulator,name=iPhone 13,OS=15.4"
@@ -99,7 +117,7 @@ test_framework: test_framework_darwin
 test_framework_darwin: test_framework_GRDB test_framework_GRDBCustom test_framework_SQLCipher test_SPM
 test_framework_GRDB: test_framework_GRDBOSX test_framework_GRDBWatchOS test_framework_GRDBiOS test_framework_GRDBtvOS
 test_framework_GRDBCustom: test_framework_GRDBCustomSQLiteOSX test_framework_GRDBCustomSQLiteiOS
-test_framework_SQLCipher: test_framework_SQLCipher3 test_framework_SQLCipher4
+test_framework_SQLCipher: test_framework_SQLCipher3 test_framework_SQLCipher3Encrypted test_framework_SQLCipher4 test_framework_SQLCipher4Encrypted
 test_archive: test_archive_GRDBOSX_xcframework
 test_install: test_install_manual test_install_SPM test_install_customSQLite test_install_GRDB_CocoaPods test_CocoaPodsLint
 test_CocoaPodsLint: test_CocoaPodsLint_GRDB
@@ -267,6 +285,21 @@ else
 	@exit 1
 endif
 
+test_framework_SQLCipher3Encrypted:
+ifdef POD
+	cd Tests/CocoaPods/SQLCipher3 && \
+	$(POD) install && \
+	$(XCODEBUILD) \
+	  -workspace GRDBTests.xcworkspace \
+	  -scheme GRDBEncryptedTests \
+	  SWIFT_VERSION=$(MAX_SWIFT_VERSION) \
+	  build-for-testing test-without-building \
+	  $(XCPRETTY)
+else
+	@echo CocoaPods must be installed for test_framework_SQLCipher3Encrypted
+	@exit 1
+endif
+
 test_framework_SQLCipher4:
 ifdef POD
 	cd Tests/CocoaPods/SQLCipher4 && \
@@ -279,6 +312,21 @@ ifdef POD
 	  $(XCPRETTY)
 else
 	@echo CocoaPods must be installed for test_framework_SQLCipher4
+	@exit 1
+endif
+
+test_framework_SQLCipher4Encrypted:
+ifdef POD
+	cd Tests/CocoaPods/SQLCipher4 && \
+	$(POD) install && \
+	$(XCODEBUILD) \
+	  -workspace GRDBTests.xcworkspace \
+	  -scheme GRDBEncryptedTests \
+	  SWIFT_VERSION=$(MAX_SWIFT_VERSION) \
+	  build-for-testing test-without-building \
+	  $(XCPRETTY)
+else
+	@echo CocoaPods must be installed for test_framework_SQLCipher4Encrypted
 	@exit 1
 endif
 
@@ -466,10 +514,10 @@ ifdef JAZZY
 	  --author 'Gwendal Roué' \
 	  --author_url https://github.com/groue \
 	  --github_url https://github.com/groue/GRDB.swift \
-	  --github-file-prefix https://github.com/groue/GRDB.swift/tree/v5.24.0 \
-	  --module-version 5.24.0 \
+	  --github-file-prefix https://github.com/groue/GRDB.swift/tree/v5.25.0 \
+	  --module-version 5.25.0 \
 	  --module GRDB \
-	  --root-url http://groue.github.io/GRDB.swift/docs/5.24/ \
+	  --root-url http://groue.github.io/GRDB.swift/docs/5.25/ \
 	  --output Documentation/Reference \
 	  --xcodebuild-arguments -project,GRDB.xcodeproj,-scheme,GRDBiOS
 else

@@ -11,7 +11,8 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 
 #### 5.x Releases
 
-- `5.24.x` Releases - [5.24.0](#5240)
+- `5.25.x` Releases - [5.25.0](#5250)
+- `5.24.x` Releases - [5.24.0](#5240) | [5.24.1](#5241)
 - `5.23.x` Releases - [5.23.0](#5230)
 - `5.22.x` Releases - [5.22.0](#5220) | [5.22.1](#5221) | [5.22.2](#5222)
 - `5.21.x` Releases - [5.21.0](#5210)
@@ -105,6 +106,22 @@ GRDB adheres to [Semantic Versioning](https://semver.org/), with one exception: 
 - **Breaking Change**: `Cursor.isEmpty` is now a property.
 - **Breaking Change**: [#1172](https://github.com/groue/GRDB.swift/pull/1172) by [@groue](https://github.com/groue): Optional is a database value like others
 - **Breaking Change**: [#1117](https://github.com/groue/GRDB.swift/pull/1117) by [@groue](https://github.com/groue): DatabaseDecodingError
+
+## 5.25.0
+
+Released June 11, 2022 &bull; [diff](https://github.com/groue/GRDB.swift/compare/v5.24.1...v5.25.0)
+
+- **New**: [#1226](https://github.com/groue/GRDB.swift/pull/1226) by [@naveensrinivasan](https://github.com/naveensrinivasan): Included githubactions in the dependabot config
+- **New**: [#1228](https://github.com/groue/GRDB.swift/pull/1228) by [@naveensrinivasan](https://github.com/naveensrinivasan): Set permissions for GitHub actions
+- **New**: [#1235](https://github.com/groue/GRDB.swift/pull/1235) by [@groue](https://github.com/groue): Raise default Quality of Service to `.userInitiated`.
+- **Fixed**: [#1233](https://github.com/groue/GRDB.swift/pull/1233) by [@GetToSet](https://github.com/GetToSet): Fix warnings of redundant conformance constraint on Xcode 14.
+
+## 5.24.1
+
+Released May 26, 2022 &bull; [diff](https://github.com/groue/GRDB.swift/compare/v5.24.0...v5.24.1)
+
+- **Fixed**: [#1217](https://github.com/groue/GRDB.swift/pull/1217) by [@GetToSet](https://github.com/GetToSet): Fix doc issue on TableRequest.filter(keys:).
+- **Fixed**: [#1225](https://github.com/groue/GRDB.swift/pull/1225) by [@groue](https://github.com/groue): Prevent heavy DatabasePool concurrent reads from creating too many threads
 
 ## 5.24.0
 
